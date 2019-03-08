@@ -1,0 +1,97 @@
+#imports required
+import pandas as pd
+import numpy as np
+from itertools import combinations as cmbtn
+
+##rule genetation
+def generate_rule(result, res_df):
+    for i in result['Items']:
+        print('Frequent set:{}'.format(i))
+        a=find_support(res_df,i)
+        print('support of {0} is {1}'.format(i,a))
+        comb=list(cmbtn(i,2))
+        ty=list()
+        for j in comb:
+            ele=set()
+            for k in j:
+                ele.add(k)
+            ty.append(ele)
+        for j in ty:
+            print('rule:{0}->{1}'.format(j,i-j))
+            b=find_support(res_df, j)
+            print('j:{0} support:{1}'.format(j,b))
+            print('confidence:{}'.format(a/b))
+
+##getting the support of the set referred
+def find_support(res_df, i):
+    for x in range(0,len(res_df)):
+        for y in list(res_df.keys()):
+            if y=='Items':
+                if res_df[y][x]==i:
+                    return res_df['support'][x]
+
+##construction of the itemset
+def construct_itemset(count, items):
+    ty=list()
+    comb=list(cmbtn(items,count))
+    for i in comb:
+        ele=set()
+        for j in i:
+            ele.add(j)
+        ty.append(ele)
+    return ty
+
+##making list
+def construct_list(list_items,min_support, transactions):
+    list_n=pd.DataFrame(index=np.arange(0,len(list_items),1), columns='Items support'.split())
+    list_n['Items']=list_items
+    support=list()
+    for i in list_n['Items']:
+        count=0
+        for j in transactions['Itemset']:
+            comp=set(map(str,j.split(',')))
+            if i.issubset(comp):
+                count+=1
+        support.append(count)
+    list_n['support']=support
+    count_n=list_n[list_n['support']>=min_support]
+    return count_n
+
+##rule genetation
+def generate_rule(result):
+    for i in result['Items']:
+    print('Frequent set:{}'.format(i))
+    comb=list(cmbtn(i,2))
+    ty=list()
+    for j in comb:
+        ele=set()
+        for k in j:
+            ele.add(k)
+        ty.append(ele)
+    for j in ty:
+        print('rule:{0}->{1}'.format(j,i-j))
+
+if __name__=='__main__':
+  transactions=pd.read_csv(input('getThefile'))
+  min_support=int(input('getSupport'))
+  res_df=pd.DataFrame(columns='Items support'.split())
+  times=2
+  items=set()
+  for i in transactions['Itemset']:
+      for j in list(map(str,i.split(','))):
+          items.add(j)
+  list_items=list(map(lambda x:{x},items))
+  refer_frame=transactions
+  while(len(refer_frame)>=2):
+      if times!=2:
+          prev_df=df
+      df=construct_list(list_items,min_support,transactions)
+      res_df=res_df.append(df, ignore_index=True)
+      list_items=construct_itemset(times,items)
+      times+=1
+      refer_frame=df
+  if len(df)==0:
+      result=prev_df
+  else:
+      result=df
+  generate_rule(result)

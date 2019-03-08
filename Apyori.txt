@@ -1,0 +1,44 @@
+##Assuming that file where the code runs has all the files required for the execution
+##Spyder code:
+##imports required(##are comment lines)
+import pandas as pd
+from apyori import apriori
+from itertools import combinations
+
+##this gives the apriori result
+def analyz(df):
+    list_df=[]
+    for i in range(0,len(df)):
+        list_df.append([str(df.values[i,j]) for j in range(0,len(df.keys()))])
+    df_rule=apriori(list_df)
+    df_result=list(df_rule)
+    print('length of result is {}'.format(len(df_result)))
+    if len(df_result)==0:
+        print('no outcome')
+        return
+    for item in df_result:
+        pair=item[0]
+        items=[x for x in pair]
+        if len(items)==2:
+            print('rule: {0}->{1}'.format(items[0],items[1]))
+        else:
+            print('rule: {0}'.format(items[0]))
+        print ("Support:{}".format(str(item[1])))
+        print ("Confidence:{}".format(str(item[2][0][2])))
+        print ("Lift:{}".format(str(item[2][0][3])))
+        print("+++++++++++++++++++++++++++++++++++++++++++++++")
+
+##main function
+if __name__=='__main__':
+   ##Make a document participants which has all the potential candidates to find the apriori
+   titanic=pd.read_csv('Titanic.csv')
+   df=titanic[['Survived', 'Pclass', 'Sex', 'Age', 'Siblings/Spouses Aboard',
+       'Parents/Children Aboard', 'Fare']]
+   df.to_csv('participants.csv',index=False)##make the participants.csv 
+   part=pd.read_csv('participants.csv')
+   candidates=list(part.keys())
+   can_com=list(combinations(candidates,2))
+   for item in can_com:
+       print('candidates are {0} and {1}'.format(item[0],item[1]))
+       df=part[[item[0],item[1]]]
+       analyz(df)
